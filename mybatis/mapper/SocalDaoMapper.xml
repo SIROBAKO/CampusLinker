@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hako.web.cl.dao.CLSocalDao">
+
+	<resultMap type="com.hako.web.cl.entity.CL_Socal"
+		id="Result_Socal">
+	</resultMap>
+
+	<parameterMap type="com.hako.web.cl.entity.CL_Socal"
+		id="Param_Socal">
+	</parameterMap>
+
+	<select id="getById" resultMap="Result_Socal">
+		SELECT * FROM CL_SOCAL WHERE
+		USER_ID = #{user_id} AND FRIEND_ID=#{friend_id}
+	</select>
+	<select id="getByNum" resultMap="Result_Socal">
+		SELECT * FROM CL_SOCAL WHERE NUM
+		= #{socal_num}
+	</select>
+
+	<select id="getList" resultMap="Result_Socal">
+		SELECT * FROM CL_SOCAL WHERE
+		USER_ID = #{user_id}
+	</select>
+
+	<insert id="insert" parameterMap="Param_Socal">
+		INSERT INTO
+		CL_SOCAL(USER_ID,FRIEND_ID,STATE)
+		VALUES(#{user_id},#{friend_id},#{state})
+	</insert>
+	<update id="update">
+		UPDATE CL_SOCAL SET STATE = #{state} WHERE USER_ID =
+		#{user_id} AND FRIEND_ID=#{friend_id}
+	</update>
+	<delete id="del"></delete>
+	<select id="check" resultType="int">
+		SELECT COUNT(*) FROM CL_SOCAL WHERE NUM = #{num} AND USER_ID =#{id}
+	</select>
+</mapper>

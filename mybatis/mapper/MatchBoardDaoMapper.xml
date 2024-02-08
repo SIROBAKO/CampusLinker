@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hako.web.cl.dao.CLMatchBoardDao">
+
+
+
+	<resultMap type="com.hako.web.cl.entity.CL_Match_Board"
+		id="Result_Match_Board">
+	</resultMap>
+
+	<parameterMap type="com.hako.web.cl.entity.CL_Match_Board"
+		id="Param_Match_Board">
+	</parameterMap>
+
+	<insert id="insert" parameterMap="Param_Match_Board">
+
+		<selectKey resultType="int" keyProperty="room_num"
+			order="BEFORE">
+			SELECT MAX(NUM) FROM
+			CL_CHAT_ROOM;
+		</selectKey>
+
+		INSERT INTO
+		CL_MATCH_BOARD(NUM,LOCATION,GENDER,STUDENT_ID,ROOM_NUM,DELETE_DATE)
+		SELECT MAX(NUM),#{location},#{gender},#{student_id},#{room_num},
+		#{delete_date} FROM CL_BOARD
+
+
+	</insert>
+
+	<update id="update" parameterMap="Param_Match_Board">
+		UPDATE CL_MATCH_BOARD SET
+		LOCATION = #{location},
+		GENDER = #{gender},
+		STUDENT_ID = #{student_id},
+		DELETE_DATE =#{delete_date}
+		WHERE NUM = #{num}
+	</update>
+
+	<delete id="del">
+		DELETE FROM CL_MATCH_BOARD WHERE NUM=${board_num};
+	</delete>
+
+	<select id="get" resultMap="Result_Match_Board">
+		SELECT CL_MATCH_BOARD.NUM,WRITE_USER,
+		TITLE,CATEGORY,CONTENTS,CREATE_DATE,COMMENT,REACTION_COUNT,HIDDEN_NAME,SCHOOL,LOCATION,GENDER,STUDENT_ID,ROOM_NUM,DELETE_DATE
+		FROM CL_BOARD INNER JOIN CL_MATCH_BOARD ON CL_BOARD.NUM =
+		CL_MATCH_BOARD.NUM WHERE
+		CL_BOARD.NUM = #{board_num} AND
+		CL_BOARD.BOARD_TYPE = 'MATCH';
+	</select>
+
+	<select id="getList" resultType="com.hako.web.cl.dto.CLMatchBoardDTO">
+		SELECT
+		*
+		FROM ( SELECT @ROWNUM :=
+		@ROWNUM + 1 AS ROWNUM, TMP.* FROM
+		(SELECT
+		CL_MATCH_BOARD.NUM,
+		TITLE,CATEGORY,CONTENTS,CREATE_DATE,GENDER,CL_MATCH_BOARD.ROOM_NUM,CL_MATCH_BOARD.DELETE_DATE
+		FROM CL_BOARD INNER JOIN CL_MATCH_BOARD ON CL_BOARD.NUM =
+		CL_MATCH_BOARD.NUM
+		WHERE SCHOOL = #{school} AND
+		BOARD_TYPE = 'MATCH'AND
+		CATEGORY LIKE "%${category}%" AND TITLE
+		LIKE "%${title}%" )TMP ,
+		(SELECT(@ROWNUM
+		:=0)=0)TMP2 ORDER BY
+		CREATE_DATE DESC)TMP3 WHERE ROWNUM
+		BETWEEN
+		#{start} AND #{end};
+	</select>
+
+	<select id="getListAll" resultMap="Result_Match_Board">
+		SELECT NUM, DELETE_DATE FROM CL_MATCH_BOARD
+	</select>
+	
+	<select id = "getBoardNum" resultType = "int">	
+		SELECT NUM FROM CL_MATCH_BOARD WHERE ROOM_NUM = #{room_num}	
+	</select>
+
+</mapper>

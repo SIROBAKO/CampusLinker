@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hako.web.cl.dao.CLChatDao">
+
+	<resultMap type="com.hako.web.cl.entity.CL_Chat_Room"
+		id="Result_Chat_Room">
+	</resultMap>
+
+	<parameterMap type="com.hako.web.cl.entity.CL_Chat_Room"
+		id="Param_Chat_Room">
+	</parameterMap>
+
+
+	<resultMap type="com.hako.web.cl.entity.CL_Chat"
+		id="Result_Chat">
+	</resultMap>
+
+	<parameterMap type="com.hako.web.cl.entity.CL_Chat"
+		id="Param_Chat">
+	</parameterMap>
+
+	<resultMap type="com.hako.web.cl.entity.CL_Chat_User"
+		id="Result_User">
+	</resultMap>
+
+	<parameterMap type="com.hako.web.cl.entity.CL_Chat_User"
+		id="Param_User">
+	</parameterMap>
+
+	<resultMap type="com.hako.web.cl.dto.CLChatRoomInfo"
+		id="Result_RoomInfo">
+	</resultMap>
+
+
+	<insert id="create_room">
+		INSERT INTO
+		<choose>
+			<when test='max_user != "" and max_user != null'>
+				CL_CHAT_ROOM(ROOM_NAME, MAX_USER)
+				VALUES(#{room_name},#{max_user});
+			</when>
+			<otherwise>
+				CL_CHAT_ROOM(ROOM_NAME)
+				VALUES(#{room_name});
+			</otherwise>
+		</choose>
+
+
+	</insert>
+
+	<update id="update_room" parameterMap="Param_Chat_Room">
+		UPDATE CL_CHAT_ROOM SET
+		ROOM_NAME = #{room_name},
+		MAX_USER = #{max_user}
+		WHERE NUM = #{num}
+
+	</update>
+
+	<delete id="del_room">
+		DELETE FROM CL_CHAT_ROOM WHERE NUM=${room_num};
+	</delete>
+
+	<select id="get_room" resultMap="Result_Chat_Room">
+		SELECT *FROM CL_CHAT_ROOM WHERE
+		NUM = #{room_num}
+
+	</select>
+
+
+	<select id="get_roomList"
+		resultType="com.hako.web.cl.dto.CLChatRoomDTO">
+		SELECT A.ROOM_NUM ,
+		(SELECT ROOM_NAME FROM CL_CHAT_ROOM
+		WHERE
+		NUM = A.ROOM_NUM)AS ROOM_NAME,
+		(SELECT CHAT FROM CL_CHAT WHERE
+		ROOM =
+		A.ROOM_NUM
+		ORDER BY CREATE_DATE DESC
+		LIMIT 1) AS LAST_CHAT,
+		A.NOT_READ ,
+		B.CREATE_DATE
+		FROM
+		CL_CHAT_USER AS A INNER JOIN
+		(SELECT ROOM
+		,MAX(CREATE_DATE)AS
+		CREATE_DATE FROM CL_CHAT GROUP BY ROOM )AS B
+		ON
+		A.ROOM_NUM = B.ROOM
+		WHERE A.USER_ID = #{id} ORDER BY B.CREATE_DATE DESC
+	</select>
+
+
+	<insert id="insert_chat" parameterMap="Param_Chat">
+		INSERT INTO
+		CL_CHAT (ROOM,
+		USER_ID ,CHAT)
+		VALUES(#{room},#{user_id},#{chat});
+	</insert>
+
+	<insert id="insert_chats" parameterMap="Param_Chat">
+		<selectKey resultType="int" keyProperty="room"
+			order="BEFORE">
+			SELECT MAX(NUM) FROM
+			CL_CHAT_ROOM;
+		</selectKey>
+		INSERT INTO
+		CL_CHAT (ROOM,
+		USER_ID ,CHAT)
+		VALUES(#{room},#{user_id},#{chat});
+	</insert>
+
+
+	<update id="update_chat" parameterMap="Param_Chat">
+		UPDATE CL_CHAT SET
+		ROOM_NAME = #{room_name}
+		WHERE NUM = #{num}
+
+	</update>
+
+	<delete id="del_chat">
+		DELETE FROM CL_CHAT WHERE NUM=${chat_num};
+	</delete>
+
+	<select id="get_chat" resultMap="Result_Chat">
+		SELECT *FROM CL_CHAT WHERE
+		NUM =
+		${chat_num}
+	</select>
+
+	<select id="get_lastChat" resultMap="Result_Chat">
+		SELECT *FROM CL_CHAT ORDER
+		BY CREATE_DATE DESC LIMIT 1
+	</select>
+
+	<select id="get_chatList" resultMap="Result_Chat">
+		SELECT * FROM ( SELECT
+		@ROWNUM:=
+		@ROWNUM + 1 AS ROWNUM,
+		TMP.*
+		FROM (SELECT *
+		FROM CL_CHAT WHERE
+		ROOM = #{room_num})TMP ,
+		(SELECT(@ROWNUM
+		:=0)=0)TMP2 ORDER BY
+		CREATE_DATE
+		DESC)TMP3
+		WHERE ROWNUM
+		BETWEEN ${start} AND ${end};
+	</select>
+
+
+	<select id="get_user" resultMap="Result_User">
+		SELECT * FROM CL_CHAT_USER WHERE
+		NUM = #{num}
+	</select>
+
+	<select id="check_user" resultType="int">
+		SELECT COUNT(*) FROM
+		CL_CHAT_USER WHERE ROOM_NUM = #{room_num} AND USER_ID = #{id}
+	</select>
+
+
+	<select id="get_userList" resultMap="Result_User">
+		SELECT * FROM CL_CHAT_USER
+		WHERE ROOM_NUM = #{room_num}
+	</select>
+
+	<select id="get_chatInfo" resultMap="Result_RoomInfo">
+
+
+		SELECT
+		IF(cr.MAX_USER = '', 0, cr.MAX_USER) AS maxUser,
+		IF(COUNT(cu.USER_ID) = '', 0, COUNT(cu.USER_ID)) AS userCount
+		FROM CL_CHAT_ROOM cr
+		LEFT JOIN CL_CHAT_USER cu ON cu.ROOM_NUM = cr.NUM
+		WHERE cr.NUM = #{room_num}
+		GROUP BY cr.NUM;
+
+
+	</select>
+
+
+	<insert id="insert_user" parameterMap="Param_User">
+
+
+		INSERT INTO CL_CHAT_USER
+		(ROOM_NUM, USER_ID)
+		VALUES(#{room_num},#{user_id});
+	</insert>
+
+	<insert id="insert_users" parameterMap="Param_User">
+		<selectKey resultType="int" keyProperty="room_num"
+			order="BEFORE">
+			SELECT MAX(NUM) FROM
+			CL_CHAT_ROOM;
+		</selectKey>
+		INSERT INTO
+		CL_CHAT_USER (ROOM_NUM, USER_ID)
+		VALUES(#{room_num},#{user_id});
+	</insert>
+
+	<update id="addNotRead">
+		UPDATE CL_CHAT_USER SET NOT_READ = NOT_READ + 1 WHERE
+		ROOM_NUM = #{room} AND NOT USER_ID =#{user_id}
+	</update>
+
+	<update id="resetNotRead" parameterMap="Param_User">
+		UPDATE CL_CHAT_USER SET
+		NOT_READ = 0 WHERE ROOM_NUM = #{room_num} AND USER_ID =#{user_id}
+	</update>
+
+	<delete id="del_user">
+		DELETE FROM CL_CHAT_USER WHERE ROOM_NUM = #{num} AND
+		USER_ID = #{id}
+	</delete>
+	<delete id="del_roomUser">
+		DELETE FROM CL_CHAT_USER WHERE ROOM_NUM = #{room_num}
+	</delete>
+
+	<select id="count_user" resultType="int">
+		SELECT COUNT(*) FROM
+		CL_CHAT_USER WHERE ROOM_NUM = #{room_num}
+	</select>
+
+
+
+
+	<delete id="del_userAll">
+		DELETE FROM CL_CHAT_USER WHERE USER_ID = #{id}
+	</delete>
+	<update id="del_chatAll">
+		UPDATE CL_CHAT SET USER_ID = "(알수없음)"
+		WHERE
+		USER_ID =
+		#{id}
+	</update>
+
+
+	<insert id="firstChat" parameterType="String">
+		INSERT INTO CL_CHAT (ROOM, USER_ID, CHAT)
+		SELECT (SELECT MAX(NUM) FROM CL_CHAT_ROOM), '시스템 관리자', CONCAT(#{name}, '님의
+		방이 생성되었습니다.')
+	</insert>
+
+
+	<select id="getRoomName" resultType="String">
+		SELECT ROOM_NAME FROM
+		CL_CHAT_ROOM WHERE NUM = #{room_num}
+	</select>
+
+
+</mapper>

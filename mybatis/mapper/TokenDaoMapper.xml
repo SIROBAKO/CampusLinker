@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hako.web.cl.dao.CLTokenDao">
+
+
+
+
+	<resultMap type="com.hako.web.cl.entity.CL_JwtToken"
+		id="Result_Token">
+	</resultMap>
+
+	<parameterMap type="com.hako.web.cl.entity.CL_JwtToken"
+		id="Param_Token">
+	</parameterMap>
+
+	<insert id="insert" parameterMap="Param_Token">
+		INSERT INTO CL_TOKEN
+		(USER_ID,ACCESS_TOKEN,REFRESH_TOKEN)
+		VALUES(#{user_id},#{access_token},#{refresh_token});
+	</insert>
+
+	<update id="update" parameterMap="Param_Token">
+		UPDATE CL_TOKEN SET
+		ACCESS_TOKEN = #{access_token},
+		REFRESH_TOKEN = #{refresh_token}
+		WHERE
+		USER_ID = #{user_id}
+	</update>
+
+	<delete id="del">
+		DELETE FROM CL_TOKEN WHERE USER_ID = #{user_id}
+	</delete>
+
+	<select id="get" resultMap="Result_Token">
+		SELECT * FROM CL_TOKEN WHERE USER_ID
+		= #{user_id}
+	</select>
+
+
+	<update id="setDeviceToken" parameterMap="Param_Token">
+		UPDATE CL_TOKEN SET
+		DEVICE_TOKEN = #{device_token}
+		WHERE
+		USER_ID = #{user_id}
+	</update>
+
+	<select id="getDeviceToken" resultType="java.lang.String">
+		SELECT DEVICE_TOKEN FROM CL_TOKEN WHERE USER_ID = #{user_id}
+	</select>
+</mapper>

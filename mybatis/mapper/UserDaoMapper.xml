@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hako.web.cl.dao.CLUserDao">
+
+
+	<resultMap type="com.hako.web.cl.entity.CL_Univ"
+		id="Result_Univ">
+	</resultMap>
+
+	<resultMap type="com.hako.web.cl.entity.CL_User"
+		id="Result_User">
+		<result property="univ" column="UNIVERSITY" />
+		<result property="pwd" column="PASSWOARD" />
+		<result property="cert" column="CERTIFIED" />
+	</resultMap>
+
+	<parameterMap type="com.hako.web.cl.entity.CL_User"
+		id="Param_User">
+	</parameterMap>
+
+
+	<resultMap type="com.hako.web.cl.entity.CL_Cert"
+		id="Result_Cert">
+	</resultMap>
+
+	<parameterMap type="com.hako.web.cl.entity.CL_Cert"
+		id="Param_Cert">
+	</parameterMap>
+
+	<!-- 대학정보 반환 -->
+	<select id="getUniv" resultMap="Result_Univ">
+		SELECT * FROM
+		CL_SCHOOL_INFO
+		WHERE
+		SCHOOL_NAME = #{query} LIMIT 1
+	</select>
+
+	<!-- 대학 목록 반환 -->
+	<select id="getUnivList" resultMap="Result_Univ">
+		SELECT * FROM
+		CL_SCHOOL_INFO
+		WHERE SCHOOL_NAME LIKE '${query}%' LIMIT 5
+	</select>
+
+
+	<!-- 회원가입 -->
+	<insert id="joinUser" parameterMap="Param_User">
+		INSERT INTO CL_USER
+		(NAME,UNIVERSITY,STUDENT_ID,GENDER,ID,PASSWOARD,EMAIL,CERTIFIED)
+		VALUES(#{name},#{univ},#{student_id},#{gender},#{id},#{pwd},#{email},#{cert});
+	</insert>
+
+
+	<!-- 유저 정보 반환 -->
+	<select id="getUser" resultMap="Result_User">
+		SELECT * FROM CL_USER WHERE ID =
+		#{id}
+	</select>
+
+	<!-- id 찾기 -->
+	<select id="findId" resultType="String">
+		SELECT ID FROM CL_USER WHERE EMAIL = #{email} LIMIT  1
+	</select>
+	
+	<!-- 유저 삭제 -->
+	<delete id="delUser">
+		DELETE FROM CL_USER WHERE ID = #{id}
+	</delete>
+
+	<!-- 유저 업데이트 -->
+	<update id="updateUser" parameterMap="Param_User">
+
+		UPDATE CL_USER SET
+		<choose>
+			<when test='name != ""  and name != null'>
+				NAME = #{name},
+			</when>
+			<otherwise>
+				NAME = NAME,
+			</otherwise>
+		</choose>
+		<choose>
+			<when test='email != "" and email != null'>
+				EMAIL = #{email},
+			</when>
+			<otherwise>
+				EMAIL = EMAIL,
+			</otherwise>
+		</choose>
+		<choose>
+			<when test='cert != "" and cert != null'>
+				CERTIFIED = #{cert},
+			</when>
+			<otherwise>
+				CERTIFIED = CERTIFIED,
+			</otherwise>
+		</choose>
+		<choose>
+			<when test='pwd != "" and pwd != null'>
+				PASSWOARD = #{pwd}
+			</when>
+			<otherwise>
+				PASSWOARD = PASSWOARD
+			</otherwise>
+		</choose>
+
+		WHERE ID = #{id}
+
+	</update>
+
+
+	<!-- 중복아이디 확인 -->
+
+	<select id="checkUserForm" resultType="int">
+		SELECT COUNT(*)AS COUNT FROM
+		CL_USER WHERE
+		${query} = #{value};
+	</select>
+
+
+
+	
+
+	<select id="getCert" resultMap="Result_Cert">
+		SELECT * FROM CL_CERT WHERE TOKEN
+		= #{token}
+	</select>
+
+	<insert id="insertCert" parameterMap="Param_Cert">
+		INSERT INTO CL_CERT (TOKEN,
+		USER_ID, PURPOSE,DELETE_DATE)
+		VALUES(#{token},#{user_id},#{purpose},DATE_ADD(NOW(), INTERVAL 30
+		MINUTE))
+	</insert>
+
+	<delete id="delCert">
+		DELETE FROM CL_CERT WHERE TOKEN = #{token}
+	</delete>
+	
+	
+	
+</mapper>

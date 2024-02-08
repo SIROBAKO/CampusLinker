@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hako.web.cl.dao.CLBoardDao">
+
+	<resultMap type="com.hako.web.cl.entity.CL_Board"
+		id="Result_Board">
+	</resultMap>
+
+	<parameterMap type="com.hako.web.cl.entity.CL_Board"
+		id="Param_Board">
+	</parameterMap>
+
+	<insert id="insert" parameterMap="Param_Board">
+		INSERT INTO
+		CL_BOARD(WRITE_USER,TITLE,CATEGORY,CONTENTS,COMMENT,REACTION_COUNT,HIDDEN_NAME,SCHOOL,BOARD_TYPE)
+		VALUES(#{write_user},#{title},#{category},#{contents},0,0,#{hidden_name},#{school},#{board_type})
+	</insert>
+
+
+	<update id="update" parameterMap="Param_Board">
+		UPDATE CL_BOARD SET
+		TITLE =
+		#{title},
+		CATEGORY = #{category},
+		CONTENTS = #{contents},
+		HIDDEN_NAME
+		=#{hidden_name}
+		WHERE NUM = #{num} AND WRITE_USER = #{write_user}
+	</update>
+
+	<update id="delUser" parameterMap="Param_Board">
+		UPDATE CL_BOARD SET
+		WRITE_USER= "(알수없음)",
+		HIDDEN_NAME="N"
+		WHERE WRITE_USER = #{id}
+	</update>
+
+	<update id="addComment">
+		UPDATE CL_BOARD SET
+		COMMENT = COMMENT + 1
+		WHERE NUM =
+		#{board_num}
+	</update>
+
+	<update id="subComment">
+		UPDATE CL_BOARD SET
+		COMMENT = COMMENT - 1
+		WHERE NUM =
+		#{board_num}
+	</update>
+	<delete id="del">
+		DELETE FROM CL_BOARD WHERE NUM=${board_num};
+	</delete>
+
+	<select id="get" resultMap="Result_Board">
+		SELECT * FROM CL_BOARD WHERE
+		NUM=${num} ;
+	</select>
+
+	<select id="getList" resultMap="Result_Board">
+		SELECT NUM,
+		TITLE,CATEGORY,CONTENTS,CREATE_DATE,COMMENT,REACTION_COUNT FROM (
+		SELECT @ROWNUM
+		:=
+		@ROWNUM + 1 AS ROWNUM,
+		TMP.*
+		FROM (SELECT *
+		FROM CL_BOARD
+		WHERE SCHOOL =
+		#{school} AND BOARD_TYPE = 'FREE' AND CATEGORY LIKE
+		"%${category}%"
+		AND TITLE
+		LIKE "%${title}%")TMP ,
+		(SELECT(@ROWNUM
+		:=0)=0)TMP2 ORDER BY
+		CREATE_DATE
+		DESC)TMP3
+		WHERE ROWNUM
+		BETWEEN
+		${start}
+		AND ${end};
+	</select>
+
+	<select id="getListPurpose" resultMap="Result_Board">
+		SELECT NUM, TITLE,CATEGORY,CONTENTS,CREATE_DATE,COMMENT,REACTION_COUNT
+		FROM
+		<choose>
+			<when test='purpose=="reaction"'>
+				(
+				SELECT @ROWNUM := @ROWNUM + 1 AS ROWNUM, TMP.* FROM
+				(SELECT *
+				FROM CL_BOARD WHERE NUM IN
+				(SELECT BOARD_NUM FROM CL_REACTION WHERE
+				USER_ID =
+				#{user_id} ))TMP ,
+				(SELECT(@ROWNUM :=0)=0)TMP2 ORDER BY
+				CREATE_DATE DESC)TMP3 WHERE
+				ROWNUM
+				BETWEEN ${start} AND ${end};
+			</when>
+			<when test='purpose=="comment"'>
+			(
+				SELECT @ROWNUM := @ROWNUM + 1 AS ROWNUM, TMP.* FROM
+				(SELECT *
+				FROM CL_BOARD WHERE NUM IN
+				(SELECT REF FROM CL_COMMENT WHERE USER_ID =
+				#{user_id} ))TMP ,
+				(SELECT(@ROWNUM :=0)=0)TMP2 ORDER BY
+				CREATE_DATE DESC)TMP3 WHERE
+				ROWNUM
+				BETWEEN ${start} AND ${end};
+			</when>
+			<when test='purpose=="commend"'>
+				CL_BOARD WHERE CREATE_DATE BETWEEN DATE_ADD(NOW(), INTERVAL -1 DAY) AND NOW()  ORDER BY REACTION_COUNT DESC LIMIT 2
+			</when>
+		</choose>
+
+
+	</select>
+	
+	<insert id="addReactionUser">
+		INSERT INTO
+		CL_REACTION(BOARD_NUM,USER_ID)
+		VALUES(#{board_num}, #{user_id})
+	</insert>
+	
+	<update id="addReaction">
+		UPDATE CL_BOARD SET
+		REACTION_COUNT = REACTION_COUNT + 1
+		WHERE NUM =
+		#{board_num}
+	</update>
+	
+	<select id="checkReaction" resultType="int">
+		SELECT COUNT(*) FROM
+		CL_REACTION WHERE USER_ID = #{user_id} AND BOARD_NUM =
+		#{board_num}
+	</select>
+</mapper>
