@@ -1,0 +1,7 @@
+![슬라이드1](https://github.com/SIROBAKO/CampusLinker/assets/109245143/aba7043d-6533-4a0a-9792-307e566173b4)
+![슬라이드2](https://github.com/SIROBAKO/CampusLinker/assets/109245143/532d8cd3-3eca-4cab-aa7f-32c674db4b0e)
+![슬라이드3](https://github.com/SIROBAKO/CampusLinker/assets/109245143/620b3836-0bca-4671-9cba-d78d42bb425d)
+![슬라이드4](https://github.com/SIROBAKO/CampusLinker/assets/109245143/b7815917-3e01-4f26-88e6-ea075b2b08aa)
+![슬라이드5](https://github.com/SIROBAKO/CampusLinker/assets/109245143/bb05aefc-3344-4482-8328-7e947dc8b631)
+![슬라이드6](https://github.com/SIROBAKO/CampusLinker/assets/109245143/82db8645-c04b-4f7f-9776-1eed9e806530)
+![슬라이드7](https://github.com/SIROBAKO/CampusLinker/assets/109245143/2fae46c8-bdda-485b-93b1-bbe6b0028b74)
